@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  priceInr    Int
+  category    String
+  condition   String
+  location    String   @default("")
+  imageUrl    String?
+  sellerName  String
+  sellerEmail String
+  sellerPhone String?
+  status      String   @default("available")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  images      ListingImage[]
+}
+
+model ListingImage {
+  id        String  @id @default(cuid())
+  listingId String
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  path      String
+  sortOrder Int     @default(0)
+}
+
+model Rental {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  type          String
+  address       String
+  distanceKm    Float
+  rentInr       Int
+  imageUrl      String?
+  ownerName     String
+  ownerEmail    String
+  ownerPhone    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  images        RentalImage[]
+}
+
+model RentalImage {
+  id        String @id @default(cuid())
+  rentalId  String
+  rental    Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  path      String
+  sortOrder Int    @default(0)
+}
+
+model YantraCare {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  location    String
+  fromDate    DateTime @db.Date
+  toDate      DateTime @db.Date
+  ownerName   String
+  ownerEmail  String
+  ownerPhone  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Meeting {
+  id        String    @id @default(cuid())
+  title     String
+  location  String    @default("")
+  startsAt  DateTime
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model CompletedProgram {
+  id          String   @id @default(cuid())
+  title       String
+  location    String   @default("")
+  completedOn DateTime @db.Date
+  createdAt   DateTime @default(now())
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  phone        String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  skills       UserSkill[]
+  volunteerPrograms VolunteerProgram[]
+}
+
+model UserSkill {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+
+  @@unique([userId, name])
+}
+
+model VolunteerProgram {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  volunteeredOn DateTime @db.Date
+}
+
+model ProgramOffering {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  location     String
+  startsOn     DateTime @db.Date
+  neededSkills String[]
+}
