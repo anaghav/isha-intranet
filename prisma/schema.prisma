@@ -126,3 +126,14 @@ model ProgramOffering {
   startsOn     DateTime @db.Date
   neededSkills String[]
 }
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  summary   String
+  category  String
+  imageUrl  String
+  sourceUrl String?
+  eventDate DateTime? @db.Date
+  createdAt DateTime  @default(now())
+}

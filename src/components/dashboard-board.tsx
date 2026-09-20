@@ -20,13 +20,6 @@ export type DashboardMeeting = {
   endsAt: string | null;
 };
 
-export type DashboardProgram = {
-  id: string;
-  title: string;
-  location: string;
-  completedOn: string;
-};
-
 export type DashboardRecommendation = {
   id: string;
   title: string;
@@ -40,7 +33,6 @@ export type DashboardRecommendation = {
 
 type DashboardBoardProps = {
   meetings: DashboardMeeting[];
-  programs: DashboardProgram[];
   recommendations: DashboardRecommendation[];
 };
 
@@ -48,7 +40,6 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function DashboardBoard({
   meetings,
-  programs,
   recommendations,
 }: DashboardBoardProps) {
   const now = kolkataYearMonth();
@@ -70,12 +61,42 @@ export function DashboardBoard({
 
   const cells = useMemo(() => monthCells(year, month), [year, month]);
 
-  const upcoming = meetings
-    .filter((meeting) => new Date(meeting.startsAt) >= upcomingStart)
-    .sort(
-      (a, b) =>
-        new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
-    );
+  const upcoming = useMemo(
+    () =>
+      meetings
+        .filter((meeting) => new Date(meeting.startsAt) >= upcomingStart)
+        .sort(
+          (a, b) =>
+            new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime(),
+        ),
+    [meetings, upcomingStart],
+  );
+
+  const upcomingByDay = useMemo(() => {
+    const groups: {
+      key: string;
+      label: string;
+      items: DashboardMeeting[];
+    }[] = [];
+    const indexByKey = new Map<string, number>();
+
+    for (const meeting of upcoming) {
+      const key = dateKeyInKolkata(new Date(meeting.startsAt));
+      const existing = indexByKey.get(key);
+      if (existing === undefined) {
+        indexByKey.set(key, groups.length);
+        groups.push({
+          key,
+          label: formatMeetingDay(new Date(meeting.startsAt)),
+          items: [meeting],
+        });
+      } else {
+        groups[existing].items.push(meeting);
+      }
+    }
+
+    return groups;
+  }, [upcoming]);
 
   function shiftMonth(delta: number) {
     const next = new Date(Date.UTC(year, month + delta, 1));
@@ -84,7 +105,7 @@ export function DashboardBoard({
   }
 
   return (
-    <section className="mx-auto w-full max-w-5xl space-y-14">
+    <section className="mx-auto w-full max-w-6xl space-y-14">
       <header>
         <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
           Overview
@@ -100,8 +121,10 @@ export function DashboardBoard({
             ? "AI recommended"
             : "Recommended for you"}
         </p>
-        <h2 className="mt-2 font-serif text-3xl text-ink">Programs to offer seva</h2>
-        <p className="mt-3 text-muted">
+        <h2 className="mt-2 font-serif text-3xl text-ink">
+          Programs to offer seva
+        </h2>
+        <p className="mt-3 max-w-2xl text-muted">
           Picked from the upcoming offerings using your skills and programs
           volunteered for.
         </p>
@@ -110,23 +133,25 @@ export function DashboardBoard({
             Add skills and seva history on Profile to get recommendations.
           </p>
         ) : (
-          <div className="mt-6">
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {recommendations.map((item) => (
               <article
                 key={item.id}
-                className="border-b border-line py-5 first:pt-0 last:border-b-0"
+                className="flex h-full flex-col bg-cream-soft p-6"
               >
                 <p className="text-xs tracking-[0.16em] text-muted uppercase">
                   {formatProgramDate(new Date(item.startsOn))}
                   {item.location ? ` · ${item.location}` : ""}
                 </p>
-                <h3 className="mt-1 font-serif text-2xl leading-snug text-ink">
+                <h3 className="mt-3 font-serif text-2xl leading-snug text-ink">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-[15px] leading-7 text-ink">{item.why}</p>
-                <p className="mt-2 text-sm text-muted">{item.description}</p>
+                <p className="mt-3 text-[15px] leading-7 text-ink">{item.why}</p>
+                <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">
+                  {item.description}
+                </p>
                 {item.neededSkills.length > 0 ? (
-                  <p className="mt-2 text-xs tracking-[0.08em] text-muted uppercase">
+                  <p className="mt-auto pt-4 text-xs tracking-[0.08em] text-muted uppercase">
                     {item.neededSkills.join(" · ")}
                   </p>
                 ) : null}
@@ -136,165 +161,141 @@ export function DashboardBoard({
         )}
       </section>
 
-      <section>
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
-              Calendar
-            </p>
-            <h2 className="mt-2 font-serif text-3xl text-ink">
-              {formatMonthYear(year, month)}
-            </h2>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => shiftMonth(-1)}
-              className="inline-flex h-10 items-center rounded-full border border-line px-4 text-sm text-ink"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              onClick={() => shiftMonth(1)}
-              className="inline-flex h-10 items-center rounded-full border border-line px-4 text-sm text-ink"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-6 overflow-x-auto">
-          <div className="min-w-[640px] rounded-sm border border-line bg-cream-soft">
-            <div className="grid grid-cols-7 border-b border-line">
-              {WEEKDAYS.map((day) => (
-                <p
-                  key={day}
-                  className="px-2 py-3 text-center text-xs tracking-[0.16em] text-muted uppercase"
-                >
-                  {day}
-                </p>
-              ))}
+      <div className="grid items-start gap-10 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.9fr)]">
+        <section>
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
+                Calendar
+              </p>
+              <h2 className="mt-2 font-serif text-3xl text-ink">
+                {formatMonthYear(year, month)}
+              </h2>
             </div>
-            <div className="grid grid-cols-7">
-              {cells.map((cell) => {
-                const key = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
-                const dayMeetings = meetingsByDay.get(key) ?? [];
-                const isToday = key === todayKey;
-                const inMonth = cell.month === month;
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => shiftMonth(-1)}
+                className="inline-flex h-10 items-center rounded-full border border-line px-4 text-sm text-ink"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={() => shiftMonth(1)}
+                className="inline-flex h-10 items-center rounded-full border border-line px-4 text-sm text-ink"
+              >
+                Next
+              </button>
+            </div>
+          </div>
 
-                return (
-                  <div
-                    key={key}
-                    className={`min-h-[108px] border-t border-r border-line px-2 py-2 [&:nth-child(7n)]:border-r-0 ${
-                      inMonth ? "bg-cream-soft" : "bg-cream"
-                    }`}
+          <div className="mt-6 overflow-x-auto">
+            <div className="min-w-[560px] border border-line bg-cream-soft">
+              <div className="grid grid-cols-7 border-b border-line">
+                {WEEKDAYS.map((day) => (
+                  <p
+                    key={day}
+                    className="px-1 py-3 text-center text-xs tracking-[0.16em] text-muted uppercase"
                   >
-                    <p
-                      className={`text-sm ${
-                        isToday
-                          ? "inline-flex h-7 w-7 items-center justify-center rounded-full bg-cta text-white"
-                          : inMonth
-                            ? "text-ink"
-                            : "text-muted/60"
+                    {day}
+                  </p>
+                ))}
+              </div>
+              <div className="grid grid-cols-7">
+                {cells.map((cell) => {
+                  const key = `${cell.year}-${String(cell.month + 1).padStart(2, "0")}-${String(cell.day).padStart(2, "0")}`;
+                  const dayMeetings = meetingsByDay.get(key) ?? [];
+                  const isToday = key === todayKey;
+                  const inMonth = cell.month === month;
+
+                  return (
+                    <div
+                      key={key}
+                      className={`min-h-[88px] border-t border-r border-line px-1.5 py-2 [&:nth-child(7n)]:border-r-0 ${
+                        inMonth ? "bg-cream-soft" : "bg-cream"
                       }`}
                     >
-                      {cell.day}
-                    </p>
-                    <div className="mt-1 space-y-1">
-                      {dayMeetings.slice(0, 2).map((meeting) => (
-                        <p
-                          key={meeting.id}
-                          className="truncate rounded-sm bg-sidebar/10 px-1.5 py-0.5 text-[11px] leading-4 text-ink"
-                          title={meeting.title}
-                        >
-                          {meeting.title}
-                        </p>
-                      ))}
-                      {dayMeetings.length > 2 ? (
-                        <p className="text-[11px] text-muted">
-                          +{dayMeetings.length - 2} more
-                        </p>
-                      ) : null}
+                      <p
+                        className={`text-sm ${
+                          isToday
+                            ? "inline-flex h-7 w-7 items-center justify-center rounded-full bg-cta text-white"
+                            : inMonth
+                              ? "text-ink"
+                              : "text-muted/60"
+                        }`}
+                      >
+                        {cell.day}
+                      </p>
+                      <div className="mt-1 space-y-1">
+                        {dayMeetings.slice(0, 2).map((meeting) => (
+                          <p
+                            key={meeting.id}
+                            className="truncate rounded-sm bg-sidebar/10 px-1.5 py-0.5 text-[11px] leading-4 text-ink"
+                            title={meeting.title}
+                          >
+                            {meeting.title}
+                          </p>
+                        ))}
+                        {dayMeetings.length > 2 ? (
+                          <p className="text-[11px] text-muted">
+                            +{dayMeetings.length - 2} more
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section>
-        <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
-          Meetings
-        </p>
-        <h2 className="mt-2 font-serif text-3xl text-ink">Upcoming</h2>
-        {upcoming.length === 0 ? (
-          <p className="mt-6 text-lg leading-8 text-muted">
-            No upcoming meetings.
+        <section className="bg-cream-soft p-6 xl:sticky xl:top-8">
+          <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
+            Meetings
           </p>
-        ) : (
-          <div className="mt-6">
-            {upcoming.map((meeting) => {
-              const startsAt = new Date(meeting.startsAt);
-              const endsAt = meeting.endsAt ? new Date(meeting.endsAt) : null;
-              return (
-                <article
-                  key={meeting.id}
-                  className="border-b border-line py-5 first:pt-0 last:border-b-0"
-                >
+          <h2 className="mt-2 font-serif text-3xl text-ink">Upcoming</h2>
+          {upcomingByDay.length === 0 ? (
+            <p className="mt-6 text-lg leading-8 text-muted">
+              No upcoming meetings.
+            </p>
+          ) : (
+            <div className="mt-6 max-h-[640px] space-y-7 overflow-y-auto pr-1">
+              {upcomingByDay.map((group) => (
+                <div key={group.key}>
                   <p className="text-xs tracking-[0.16em] text-muted uppercase">
-                    {formatMeetingDay(startsAt)}
+                    {group.label}
                   </p>
-                  <h3 className="mt-1 font-serif text-2xl leading-snug text-ink">
-                    {meeting.title}
-                  </h3>
-                  <p className="mt-2 text-[15px] text-ink">
-                    {formatMeetingRange(startsAt, endsAt)}
-                  </p>
-                  {meeting.location ? (
-                    <p className="mt-1 text-sm text-muted">{meeting.location}</p>
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
-          Programs
-        </p>
-        <h2 className="mt-2 font-serif text-3xl text-ink">
-          Completed so far
-        </h2>
-        {programs.length === 0 ? (
-          <p className="mt-6 text-lg leading-8 text-muted">
-            No completed programs yet.
-          </p>
-        ) : (
-          <div className="mt-6">
-            {programs.map((program) => (
-              <article
-                key={program.id}
-                className="border-b border-line py-5 first:pt-0 last:border-b-0"
-              >
-                <h3 className="font-serif text-2xl leading-snug text-ink">
-                  {program.title}
-                </h3>
-                <p className="mt-2 text-[15px] text-ink">
-                  {formatProgramDate(new Date(program.completedOn))}
-                </p>
-                {program.location ? (
-                  <p className="mt-1 text-sm text-muted">{program.location}</p>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+                  <div className="mt-3 space-y-4">
+                    {group.items.map((meeting) => {
+                      const startsAt = new Date(meeting.startsAt);
+                      const endsAt = meeting.endsAt
+                        ? new Date(meeting.endsAt)
+                        : null;
+                      return (
+                        <div key={meeting.id}>
+                          <p className="text-sm text-ink">
+                            {formatMeetingRange(startsAt, endsAt)}
+                          </p>
+                          <h3 className="mt-1 font-serif text-xl leading-snug text-ink">
+                            {meeting.title}
+                          </h3>
+                          {meeting.location ? (
+                            <p className="mt-1 text-sm text-muted">
+                              {meeting.location}
+                            </p>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </section>
   );
 }

@@ -37,35 +37,38 @@ export function Sidebar({
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-dvh flex-col bg-sidebar text-cream-soft transition-[width,transform] duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-dvh flex-col overflow-hidden bg-sidebar text-cream-soft transition-[width,transform] duration-200 ${
           collapsed ? "w-[272px] md:w-[76px]" : "w-[272px]"
         } ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <div
-          className={`border-b border-white/10 ${
+          className={`shrink-0 border-b border-white/10 ${
             collapsed ? "px-3 py-5 md:px-3 md:py-6" : "px-6 py-7"
           }`}
         >
-          <Link href="/dashboard" onClick={onClose} className="block">
+          <Link href="/dashboard" onClick={onClose} className="block text-center">
             <Image
               src="/isha-logo.png"
               alt="Isha"
               width={196}
               height={136}
-              className={`h-auto ${collapsed ? "w-[148px] md:w-[48px]" : "w-[148px]"}`}
+              className={`mx-auto h-auto ${collapsed ? "w-[148px] md:w-[48px]" : "w-[148px]"}`}
               priority
             />
             <p
-              className={`mt-3 text-[11px] font-medium tracking-[0.28em] text-cream-soft/70 uppercase ${
+              className={`mt-3 text-center text-[11px] font-medium tracking-[0.28em] text-cream-soft/70 uppercase ${
                 collapsed ? "md:hidden" : ""
               }`}
             >
-              Volunteer intranet
+              Intranet
             </p>
           </Link>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 px-3 py-5" aria-label="Main">
+        <nav
+          className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-3 py-5 [scrollbar-color:rgba(247,244,239,0.25)_transparent] [scrollbar-width:thin]"
+          aria-label="Main"
+        >
           {navItems.map((item) => {
             const active = pathname === item.href;
             const Icon = navIcons[item.href];
@@ -108,7 +111,7 @@ export function Sidebar({
           })}
         </nav>
 
-        <div className="border-t border-white/10 px-3 py-4">
+        <div className="shrink-0 border-t border-white/10 px-3 py-4">
           <p
             className={`px-3 pb-3 text-xs leading-5 text-cream-soft/40 ${
               collapsed ? "md:hidden" : ""

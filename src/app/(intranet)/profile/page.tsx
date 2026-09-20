@@ -16,23 +16,26 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: {
-      name: true,
-      email: true,
-      phone: true,
-      skills: { orderBy: { name: "asc" } },
-      volunteerPrograms: { orderBy: { volunteeredOn: "desc" } },
-    },
-  });
+  const [user, completedPrograms] = await Promise.all([
+    prisma.user.findUnique({
+      where: { email },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        skills: { orderBy: { name: "asc" } },
+        volunteerPrograms: { orderBy: { volunteeredOn: "desc" } },
+      },
+    }),
+    prisma.completedProgram.findMany({ orderBy: { completedOn: "desc" } }),
+  ]);
 
   if (!user) {
     redirect("/login");
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl">
+    <section className="mx-auto w-full max-w-5xl">
       <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
         Account
       </p>
@@ -43,7 +46,7 @@ export default async function ProfilePage() {
         Your details on this intranet.
       </p>
 
-      <dl className="mt-10 divide-y divide-line rounded-sm bg-cream-soft px-6">
+      <dl className="mt-10 max-w-2xl divide-y divide-line rounded-sm bg-cream-soft px-6">
         <Detail label="Name" value={user.name} />
         <Detail label="Email" value={user.email} />
         <Detail label="Phone" value={user.phone} />
@@ -52,6 +55,7 @@ export default async function ProfilePage() {
       <ProfileEditor
         skills={user.skills}
         programs={user.volunteerPrograms}
+        completedPrograms={completedPrograms}
       />
     </section>
   );

@@ -9,9 +9,19 @@ import { formatProgramDate } from "@/lib/dashboard";
 type ProfileEditorProps = {
   skills: { id: string; name: string }[];
   programs: { id: string; title: string; volunteeredOn: Date }[];
+  completedPrograms: {
+    id: string;
+    title: string;
+    location: string;
+    completedOn: Date;
+  }[];
 };
 
-export function ProfileEditor({ skills, programs }: ProfileEditorProps) {
+export function ProfileEditor({
+  skills,
+  programs,
+  completedPrograms,
+}: ProfileEditorProps) {
   return (
     <div className="mt-12 space-y-12">
       <section>
@@ -46,7 +56,7 @@ export function ProfileEditor({ skills, programs }: ProfileEditorProps) {
           </ul>
         )}
 
-        <form action={addSkill} className="mt-6 flex flex-wrap gap-3">
+        <form action={addSkill} className="mt-6 flex max-w-2xl flex-wrap gap-3">
           <input
             name="name"
             required
@@ -76,21 +86,19 @@ export function ProfileEditor({ skills, programs }: ProfileEditorProps) {
         {programs.length === 0 ? (
           <p className="mt-6 text-muted">No programs added yet.</p>
         ) : (
-          <div className="mt-6">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {programs.map((program) => (
               <article
                 key={program.id}
-                className="flex items-start justify-between gap-4 border-b border-line py-5 first:pt-0 last:border-b-0"
+                className="flex h-full flex-col bg-cream-soft p-5"
               >
-                <div>
-                  <h3 className="font-serif text-2xl leading-snug text-ink">
-                    {program.title}
-                  </h3>
-                  <p className="mt-2 text-[15px] text-ink">
-                    {formatProgramDate(program.volunteeredOn)}
-                  </p>
-                </div>
-                <form action={removeVolunteerProgram}>
+                <p className="text-xs tracking-[0.16em] text-muted uppercase">
+                  {formatProgramDate(program.volunteeredOn)}
+                </p>
+                <h3 className="mt-3 font-serif text-xl leading-snug text-ink">
+                  {program.title}
+                </h3>
+                <form action={removeVolunteerProgram} className="mt-auto pt-4">
                   <input type="hidden" name="id" value={program.id} />
                   <button
                     type="submit"
@@ -104,7 +112,10 @@ export function ProfileEditor({ skills, programs }: ProfileEditorProps) {
           </div>
         )}
 
-        <form action={addVolunteerProgram} className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+        <form
+          action={addVolunteerProgram}
+          className="mt-6 grid max-w-2xl gap-3 sm:grid-cols-[1fr_auto_auto]"
+        >
           <input
             name="title"
             required
@@ -124,6 +135,35 @@ export function ProfileEditor({ skills, programs }: ProfileEditorProps) {
             Add
           </button>
         </form>
+      </section>
+
+      <section>
+        <p className="text-xs font-medium tracking-[0.22em] text-accent uppercase">
+          Programs
+        </p>
+        <h2 className="mt-2 font-serif text-3xl text-ink">Completed so far</h2>
+        <p className="mt-3 text-muted">
+          Programs you have completed at Isha.
+        </p>
+        {completedPrograms.length === 0 ? (
+          <p className="mt-6 text-muted">No completed programs yet.</p>
+        ) : (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {completedPrograms.map((program) => (
+              <article key={program.id} className="bg-cream-soft p-5">
+                <p className="text-xs tracking-[0.16em] text-muted uppercase">
+                  {formatProgramDate(program.completedOn)}
+                </p>
+                <h3 className="mt-3 font-serif text-xl leading-snug text-ink">
+                  {program.title}
+                </h3>
+                {program.location ? (
+                  <p className="mt-2 text-sm text-muted">{program.location}</p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -8,9 +8,8 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const [meetings, programs, recommendations] = await Promise.all([
+  const [meetings, recommendations] = await Promise.all([
     prisma.meeting.findMany({ orderBy: { startsAt: "asc" } }),
-    prisma.completedProgram.findMany({ orderBy: { completedOn: "desc" } }),
     recommendProgramsForCurrentUser(),
   ]);
 
@@ -22,12 +21,6 @@ export default async function DashboardPage() {
         location: meeting.location,
         startsAt: meeting.startsAt.toISOString(),
         endsAt: meeting.endsAt?.toISOString() ?? null,
-      }))}
-      programs={programs.map((program) => ({
-        id: program.id,
-        title: program.title,
-        location: program.location,
-        completedOn: program.completedOn.toISOString(),
       }))}
       recommendations={recommendations}
     />

@@ -24,4 +24,19 @@ export const navItems = [
     label: "Rent near Isha",
     description: "Homes around the yoga center",
   },
+  {
+    href: "/hr",
+    label: "HR",
+    description: "Leave, policies, and people",
+  },
+  {
+    href: "/raise-a-ticket",
+    label: "Raise a Ticket",
+    description: "IT, facilities, and other requests",
+  },
+  {
+    href: "/donations",
+    label: "Donations",
+    description: "Drives and drop-off points",
+  },
 ] as const;
