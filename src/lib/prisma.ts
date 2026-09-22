@@ -1,32 +1,19 @@
+import { PrismaNeonHTTP } from "@prisma/adapter-neon";
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-function databaseUrl() {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    return url;
+function createPrisma() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL is not set.");
   }
 
-  const extra: string[] = [];
-  if (!/[?&]connect_timeout=/.test(url)) {
-    extra.push("connect_timeout=30");
-  }
-  if (!/[?&]pool_timeout=/.test(url)) {
-    extra.push("pool_timeout=30");
-  }
-  if (extra.length === 0) {
-    return url;
-  }
-
-  return `${url}${url.includes("?") ? "&" : "?"}${extra.join("&")}`;
+  const adapter = new PrismaNeonHTTP(connectionString, {});
+  return new PrismaClient({ adapter });
 }
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    datasourceUrl: databaseUrl(),
-  });
+export const prisma = globalForPrisma.prisma ?? createPrisma();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
