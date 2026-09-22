@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { saveProfilePhoto } from "@/lib/uploads";
 
 function readString(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -106,6 +107,22 @@ export async function removeVolunteerProgram(formData: FormData) {
 
   await prisma.volunteerProgram.deleteMany({
     where: { id, userId: user.id },
+  });
+
+  revalidatePath("/profile");
+}
+
+export async function updateProfilePhoto(formData: FormData) {
+  const user = await requireCurrentUser();
+  const imageUrl = await saveProfilePhoto(user.id, formData);
+
+  if (!imageUrl) {
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { imageUrl },
   });
 
   revalidatePath("/profile");

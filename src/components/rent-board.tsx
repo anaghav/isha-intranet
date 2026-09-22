@@ -82,7 +82,7 @@ export function RentBoard({ initialFilters, initialRentals }: RentBoardProps) {
   }, [debouncedQ, type]);
 
   return (
-    <section className="relative mx-auto w-full max-w-2xl pb-28">
+    <section className="relative mx-auto w-full max-w-6xl pb-28">
       <label className="block text-sm text-muted">
         Search
         <input
@@ -118,7 +118,7 @@ export function RentBoard({ initialFilters, initialRentals }: RentBoardProps) {
           No homes match these filters.
         </p>
       ) : (
-        <div className="mt-8">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {rentals.map((rental) => (
             <RentalCard
               key={rental.id}

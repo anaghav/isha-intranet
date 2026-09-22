@@ -23,12 +23,13 @@ function extensionFor(type: string, originalName: string) {
 }
 
 export async function saveUploadedPhotos(
-  folder: "listings" | "rentals",
+  folder: "listings" | "rentals" | "profiles",
   id: string,
   formData: FormData,
+  fieldName = "photos",
 ) {
   const incoming = formData
-    .getAll("photos")
+    .getAll(fieldName)
     .filter((value): value is File => value instanceof File && value.size > 0);
 
   if (incoming.length > MAX_FILES) {
@@ -59,4 +60,9 @@ export function saveListingPhotos(listingId: string, formData: FormData) {
 
 export function saveRentalPhotos(rentalId: string, formData: FormData) {
   return saveUploadedPhotos("rentals", rentalId, formData);
+}
+
+export async function saveProfilePhoto(userId: string, formData: FormData) {
+  const paths = await saveUploadedPhotos("profiles", userId, formData, "photo");
+  return paths[0] ?? null;
 }

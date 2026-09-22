@@ -22,14 +22,18 @@ export function YantraCareCard({
   return (
     <Link
       href={`/yantra-care/${id}`}
-      className="block border-b border-line py-5 first:pt-0 last:border-b-0"
+      className="flex h-full flex-col bg-cream-soft p-5"
     >
       <p className="text-xs tracking-[0.16em] text-muted uppercase">
         {location}
       </p>
-      <h2 className="mt-1 font-serif text-2xl leading-snug text-ink">{title}</h2>
-      <p className="mt-2 text-[15px] text-ink">{formatCareRange(fromDate, toDate)}</p>
-      <p className="mt-1 text-xs text-muted">Posted {formatPostedDate(createdAt)}</p>
+      <h2 className="mt-2 font-serif text-2xl leading-snug text-ink">{title}</h2>
+      <p className="mt-3 text-[15px] text-ink">
+        {formatCareRange(fromDate, toDate)}
+      </p>
+      <p className="mt-auto pt-3 text-xs text-muted">
+        Posted {formatPostedDate(createdAt)}
+      </p>
     </Link>
   );
 }

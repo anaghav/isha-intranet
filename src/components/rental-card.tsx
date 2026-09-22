@@ -28,11 +28,8 @@ export function RentalCard({
   const photos = rentalPhotoPaths({ imageUrl, images });
 
   return (
-    <Link
-      href={`/rent/${id}`}
-      className="flex gap-4 border-b border-line py-5 first:pt-0 last:border-b-0"
-    >
-      <div className="relative h-28 w-28 shrink-0 overflow-hidden bg-cream-soft sm:h-32 sm:w-32">
+    <Link href={`/rent/${id}`} className="flex h-full flex-col bg-cream-soft">
+      <div className="relative aspect-[4/3] overflow-hidden bg-cream">
         {photos[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={photos[0]} alt="" className="h-full w-full object-cover" />
@@ -42,12 +39,12 @@ export function RentalCard({
           </div>
         )}
       </div>
-      <div className="min-w-0 flex-1 py-0.5">
+      <div className="flex flex-1 flex-col p-5">
         <p className="text-xs tracking-[0.16em] text-muted uppercase">{type}</p>
-        <h2 className="mt-1 font-serif text-2xl leading-snug text-ink">{title}</h2>
-        <p className="mt-2 text-[15px] text-ink">{formatRent(rentInr)}</p>
-        <p className="mt-1 truncate text-sm text-muted">{address}</p>
-        <p className="mt-1 text-xs text-muted">
+        <h2 className="mt-2 font-serif text-2xl leading-snug text-ink">{title}</h2>
+        <p className="mt-3 text-[15px] text-ink">{formatRent(rentInr)}</p>
+        <p className="mt-1 line-clamp-2 text-sm text-muted">{address}</p>
+        <p className="mt-auto pt-3 text-xs text-muted">
           {formatDistance(distanceKm)} · {formatPostedDate(createdAt)}
         </p>
       </div>

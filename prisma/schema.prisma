@@ -95,6 +95,7 @@ model User {
   name         String
   phone        String
   passwordHash String
+  imageUrl     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   skills       UserSkill[]

@@ -83,7 +83,7 @@ export function YantraCareBoard({
   }, [debouncedQ]);
 
   return (
-    <section className="relative mx-auto w-full max-w-2xl pb-28">
+    <section className="relative mx-auto w-full max-w-6xl pb-28">
       <label className="block text-sm text-muted">
         Search
         <input
@@ -104,7 +104,7 @@ export function YantraCareBoard({
           No care requests match this search.
         </p>
       ) : (
-        <div className="mt-8">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {requests.map((request) => (
             <YantraCareCard
               key={request.id}

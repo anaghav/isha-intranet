@@ -91,19 +91,9 @@ const programs = [
     completedOn: new Date("2025-02-10T00:00:00.000Z"),
   },
   {
-    title: "Hatha Yoga Asanas",
-    location: "Isha Yoga Centre",
-    completedOn: new Date("2025-06-05T00:00:00.000Z"),
-  },
-  {
     title: "Guru Pooja training",
     location: "Isha Yoga Centre",
     completedOn: new Date("2025-11-22T00:00:00.000Z"),
-  },
-  {
-    title: "Karma Yoga orientation",
-    location: "Isha Yoga Centre",
-    completedOn: new Date("2026-03-08T00:00:00.000Z"),
   },
 ];
 

@@ -115,7 +115,7 @@ export function BuySellBoard({
   }
 
   return (
-    <section className="relative mx-auto w-full max-w-2xl pb-28">
+    <section className="relative mx-auto w-full max-w-6xl pb-28">
       <div className="space-y-3">
         <label className="block text-sm text-muted">
           Search
@@ -202,24 +202,18 @@ export function BuySellBoard({
             : "No listings match these filters."}
         </p>
       ) : (
-        <div className="mt-8">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {listings.map((listing) => (
-            <div key={listing.id} className="border-b border-line last:border-b-0">
-              <ListingCard
-                {...listing}
-                createdAt={new Date(listing.createdAt)}
-                flush
-              />
-              {mine && listing.status === "available" ? (
-                <button
-                  type="button"
-                  onClick={() => onMarkSold(listing.id)}
-                  className="mb-5 h-10 rounded-full border border-line px-4 text-sm text-ink"
-                >
-                  Mark as sold
-                </button>
-              ) : null}
-            </div>
+            <ListingCard
+              key={listing.id}
+              {...listing}
+              createdAt={new Date(listing.createdAt)}
+              onMarkSold={
+                mine && listing.status === "available"
+                  ? () => onMarkSold(listing.id)
+                  : undefined
+              }
+            />
           ))}
         </div>
       )}
