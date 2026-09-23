@@ -22,7 +22,8 @@ type Offering = {
   neededSkills: string[];
 };
 
-const AI_MODEL = "gemini-3-flash-lite";
+const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
+const AI_MODEL = "qwen/qwen3.8-27b";
 
 export async function recommendProgramsForCurrentUser(): Promise<ProgramRecommendation[]> {
   const session = await auth();
@@ -93,9 +94,8 @@ async function recommendWithAi(
   },
   candidates: Offering[],
 ): Promise<ProgramRecommendation[]> {
-  const baseUrl = process.env.NEON_AI_GATEWAY_BASE_URL;
-  const token = process.env.NEON_AI_GATEWAY_TOKEN;
-  if (!baseUrl || !token) {
+  const token = process.env.GROQ_API_KEY;
+  if (!token) {
     return [];
   }
 
@@ -109,10 +109,10 @@ async function recommendWithAi(
   }));
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
+  const timeout = setTimeout(() => controller.abort(), 45000);
 
   try {
-    const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+    const response = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -121,6 +121,8 @@ async function recommendWithAi(
       body: JSON.stringify({
         model: AI_MODEL,
         temperature: 0.3,
+        reasoning_effort: "none",
+        response_format: { type: "json_object" },
         messages: [
           {
             role: "system",
@@ -243,7 +245,10 @@ function parseRecommendations(content?: string) {
     return [] as { id: string; why: string }[];
   }
 
-  const jsonText = content.replace(/```json|```/g, "").trim();
+  const jsonText = content
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/```json|```/g, "")
+    .trim();
   const start = jsonText.indexOf("{");
   const end = jsonText.lastIndexOf("}");
   if (start === -1 || end === -1) {
